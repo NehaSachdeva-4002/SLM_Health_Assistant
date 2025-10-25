@@ -1,6 +1,12 @@
 # SLM Flask App (starter)
 
 Minimal Flask app scaffold for a Small Language Model (SLM) web frontend.
+<img width="873" height="868" alt="Screenshot 2025-10-25 232954" src="https://github.com/user-attachments/assets/87c0f960-a391-4573-97a7-465e7935aab0" />
+<img width="866" height="868" alt="Screenshot 2025-10-25 233031" src="https://github.com/user-attachments/assets/907aa19b-724a-4f88-a7af-11ae029cb931" />
+<img width="677" height="206" alt="Screenshot 2025-10-25 233101" src="https://github.com/user-attachments/assets/25cd75ae-19a5-4876-b394-503e2e03f9a5" />
+
+
+
 
 Quick start
 
