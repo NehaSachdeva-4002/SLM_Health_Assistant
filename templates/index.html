@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SLM Flask App</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Small Language Model (SLM) — Demo</h1>
+      <form id="gen-form">
+        <textarea id="prompt" rows="6" placeholder="Enter prompt..."></textarea>
+        <button type="submit">Generate</button>
+      </form>
+      <h2>Output</h2>
+      <pre id="output"></pre>
+    </div>
+
+    <script>
+      const form = document.getElementById('gen-form');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const prompt = document.getElementById('prompt').value;
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await res.json();
+        document.getElementById('output').innerText = data.output;
+      });
+    </script>
+  </body>
+  </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Emotion Detection - Mental Health Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .input-section {
+            margin-bottom: 25px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #result {
+            display: none;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .emotion-main {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .emotion-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        .emotion-label {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            background: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .emotions-breakdown {
+            margin-top: 25px;
+        }
+
+        .emotions-breakdown h3 {
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .emotion-bar {
+            margin-bottom: 12px;
+        }
+
+        .emotion-bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .emotion-name {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .emotion-value {
+            color: #888;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            transition: width 0.6s ease-out;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 2px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .examples {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .examples h3 {
+            color: #555;
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+
+        .example-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .example-chip {
+            background: #f5f5f5;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .example-chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .emotion-icon {
+                font-size: 50px;
+            }
+
+            .emotion-label {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Emotion Detection</h1>
+        <p class="subtitle">AI-powered mental health assistant to understand your emotions</p>
+        
+        <div class="input-section">
+            <textarea 
+                id="inputText" 
+                placeholder="Share how you're feeling... Express your thoughts freely and let AI understand your emotions."
+                maxlength="500"
+                oninput="updateCharCount()"
+            ></textarea>
+            <div class="char-count">
+                <span id="charCount">0</span> / 500 characters
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="getPrediction()" id="analyzeBtn">
+                🔍 Analyze Emotion
+            </button>
+            <button class="btn-secondary" onclick="clearAll()">
+                ✖ Clear
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing your emotions...</p>
+        </div>
+
+        <div id="result"></div>
+
+        <div class="examples">
+            <h3>Try these examples:</h3>
+            <div class="example-chips">
+                <span class="example-chip" onclick="setExample('I am so excited about my new job!')">Excited</span>
+                <span class="example-chip" onclick="setExample('I feel lonely and disconnected from everyone')">Lonely</span>
+                <span class="example-chip" onclick="setExample('This is the best day of my life!')">Happy</span>
+                <span class="example-chip" onclick="setExample('I am worried about my upcoming exam')">Anxious</span>
+                <span class="example-chip" onclick="setExample('I love spending time with my family')">Love</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const emotionEmojis = {
+            'Happiness': '😊',
+            'Sadness': '😢',
+            'Anger': '😠',
+            'Fear': '😰',
+            'Surprise': '😲',
+            'Love': '❤️',
+            'Neutral': '😐'
+        };
+
+        function updateCharCount() {
+            const text = document.getElementById('inputText').value;
+            document.getElementById('charCount').textContent = text.length;
+        }
+
+        function setExample(text) {
+            document.getElementById('inputText').value = text;
+            updateCharCount();
+            getPrediction();
+        }
+
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('result').innerHTML = '';
+            updateCharCount();
+        }
+
+        async function getPrediction() {
+            const text = document.getElementById('inputText').value.trim();
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+
+            if (!text) {
+                alert('Please enter some text to analyze.');
+                return;
+            }
+
+            // Show loading, hide result
+            analyzeBtn.disabled = true;
+            loading.style.display = 'block';
+            resultDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResult(data);
+                } else {
+                    displayError(data.error || 'An error occurred');
+                }
+            } catch (error) {
+                displayError('Failed to connect to the server. Please try again.');
+            } finally {
+                analyzeBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayResult(data) {
+            const resultDiv = document.getElementById('result');
+            const emotion = data.emotion;
+            const confidence = data.confidence;
+            const allEmotions = data.all_emotions || {};
+
+            const emoji = emotionEmojis[emotion] || '🤔';
+            
+            let html = `
+                <div class="result-card">
+                    <div class="emotion-main">
+                        <div class="emotion-icon">${emoji}</div>
+                        <div class="emotion-label">${emotion}</div>
+                        <div class="confidence-badge">${(confidence * 100).toFixed(1)}% confident</div>
+                    </div>
+            `;
+
+            // Add breakdown if available
+            if (Object.keys(allEmotions).length > 0) {
+                html += `
+                    <div class="emotions-breakdown">
+                        <h3>Emotion Breakdown</h3>
+                `;
+
+                // Sort emotions by value
+                const sortedEmotions = Object.entries(allEmotions)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5); // Top 5
+
+                sortedEmotions.forEach(([emotionName, value]) => {
+                    const percentage = (value * 100).toFixed(1);
+                    html += `
+                        <div class="emotion-bar">
+                            <div class="emotion-bar-label">
+                                <span class="emotion-name">${emotionEmojis[emotionName] || ''} ${emotionName}</span>
+                                <span class="emotion-value">${percentage}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            }
+
+            html += `</div>`;
+            
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+
+        function displayError(errorMessage) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <div class="error-message">
+                    <strong>Error:</strong> ${errorMessage}
+                </div>
+            `;
+            resultDiv.style.display = 'block';
+        }
+
+        // Enable Enter key to submit (Ctrl+Enter for newline)
+        document.getElementById('inputText').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                getPrediction();
+            }
+        });
+    </script>
+</body>
+</html>

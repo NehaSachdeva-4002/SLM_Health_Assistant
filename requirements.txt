@@ -1,0 +1,6 @@
+Flask>=2.0
+# Add model/transformers requirements when integrating a real model, e.g.:
+# transformers>=4.0.0
+# torch>=1.13.0
+Flask>=2.0
+numpy
